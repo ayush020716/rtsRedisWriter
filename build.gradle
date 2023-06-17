@@ -14,6 +14,12 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     // https://mavenlibs.com/maven/dependency/org.bytedeco.javacpp-presets/ffmpeg
     implementation 'org.bytedeco.javacpp-presets:ffmpeg:4.1-1.4.4'
+    // https://mvnrepository.com/artifact/redis.clients/jedis
+    implementation 'redis.clients:jedis:4.4.3'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+    compileOnly 'org.projectlombok:lombok:1.18.28'
 }
 
 test {

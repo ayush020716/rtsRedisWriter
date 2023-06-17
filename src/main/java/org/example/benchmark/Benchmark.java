@@ -12,7 +12,6 @@ public abstract class Benchmark {
     abstract public void exemptFromBenchmark() throws UnsupportedAudioFileException, IOException;
     abstract public void execute() throws Exception;
     abstract public void collect() throws Exception;
-
     public static void runBenchmark(Benchmark benchmark, long iterations) throws Exception {
         benchmark.exemptFromBenchmark();
         System.out.println("---------------------");
