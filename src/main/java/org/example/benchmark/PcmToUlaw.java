@@ -6,8 +6,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +33,7 @@ public class PcmToUlaw extends Benchmark {
     }
 
     @Override
-    public void execute() throws Exception {
+    public void execute() {
         List<Long> averageTimeForPacket = new ArrayList<>();
         for(List<AudioInputStream> pcmAis: pcmAudioChunks) {
             AudioFormat muLawFormat = new AudioFormat(AudioFormat.Encoding.ULAW, 8000, 8, 1, 1, 8000, false);

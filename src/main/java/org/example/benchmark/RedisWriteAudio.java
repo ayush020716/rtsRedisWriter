@@ -21,28 +21,28 @@ public class RedisWriteAudio extends Benchmark {
     private final Jedis jedis = (new RedisConfig()).getJedis();
     private List<List<byte[]>> audioData = new ArrayList<>();
     private final List<Long> averageChunkWriteTimeForSample = new ArrayList<>();
-    private long redisMemoryConsumed = 0;
-
+    private final List<Long> spaceConsumed = new ArrayList<>();
+    public RedisWriteAudio() {
+        Jedis jedis = (new RedisConfig()).getJedis();
+        jedis.flushAll();
+        System.out.println(jedis.memoryStats());
+    }
     @Override
     public void exemptFromBenchmark() throws UnsupportedAudioFileException, IOException {
         jedis.flushAll();
-        out.println("Initial Redis state \n" + jedis.memoryStats());
-        // conversion to string will be done here for 114 samples
+        // conversion to byte[] will be done here for 114 samples
         List<AudioInputStream> inputSamples = audioReader.readAllAudioSample();
-        switch (WRITE_ENCODING) {
-            case MULAW -> {
-                List<AudioInputStream> mulawSamples = new ArrayList<>();
-                for (AudioInputStream ais : inputSamples) {
-                    mulawSamples.add(audioReader.pcmToUlaw(ais));
-                }
-                inputSamples = mulawSamples;
+        if (WRITE_ENCODING == AudioFormat.MULAW) {
+            List<AudioInputStream> mulawSamples = new ArrayList<>();
+            for (AudioInputStream ais : inputSamples) {
+                mulawSamples.add(audioReader.pcmToUlaw(ais));
             }
+            inputSamples = mulawSamples;
         }
         List<byte[]> inputSamplesBytes = new ArrayList<>();
         for(AudioInputStream ais: inputSamples){
             inputSamplesBytes.add(audioReader.audioInputStreamToByteArray(ais));
         }
-
         List<List<byte[]>> inputSamplesChunks = new ArrayList<>();
         for(byte[] byteAudio: inputSamplesBytes){
             inputSamplesChunks.add(
@@ -53,20 +53,17 @@ public class RedisWriteAudio extends Benchmark {
             );
         }
         audioData = inputSamplesChunks;
-        // convert each packet to string
-        out.println("Data size: " + audioData.size());
-//        audioData = amplifyData(audioData, 10);
-        out.println("Data size: " + audioData.size());
-        // Mock set to remove first operation overhead.
         jedis.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());
     }
 
     @Override
-    public void execute() throws Exception {
+    public void execute() throws UnsupportedAudioFileException, IOException {
+        exemptFromBenchmark();
         // For each 3000 ms packet, write will be executed
         // time will be benchmarked for each iteration
         long sum = 0;
         long chunksCount = 0;
+        long redisMemoryConsumed = 0;
         for (int i = 0; i < audioData.size(); i++) {
             List<byte[]> chunkList = audioData.get(i);
             //write each chunk and average out time
@@ -81,16 +78,17 @@ public class RedisWriteAudio extends Benchmark {
             }
         }
         averageChunkWriteTimeForSample.add((long) (sum * 1.0) / chunksCount);
+        spaceConsumed.add(redisMemoryConsumed);
     }
 
     @Override
-    public void collect() throws Exception {
+    public void collect() {
         out.println("Average write time for chunks of each sample");
         for (int i = 1; i <= averageChunkWriteTimeForSample.size(); i++) {
-            out.println("Sample " + i + ": " + averageChunkWriteTimeForSample.get(i - 1));
+            out.println("Write time for Sample " + i + ": " + averageChunkWriteTimeForSample.get(i - 1) + " : Redis Memory Consumed: " + spaceConsumed.get(i - 1));
         }
         out.println("Final Redis State \n" + jedis.memoryStats());
-        out.println("Total memory consumed by redis: " + redisMemoryConsumed);
+        jedis.flushAll();
     }
 
     private List<List<byte[]>> amplifyData(List<List<byte[]>> data, int n) {
