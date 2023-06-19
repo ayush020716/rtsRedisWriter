@@ -22,8 +22,6 @@ public class PcmToUlaw extends Benchmark {
     private final List<List<Long>> averageTimesAcrossChunksAcrossIterations = new ArrayList<>();
     private final AudioReader audioReader = new AudioReader();
     private long totalChunksActedOn = -1;
-    public static final AudioFormat PCM_AUDIO_FORMAT = new AudioFormat(8000, 16, 1, true, false);
-    public static final AudioFormat ULAW_AUDIO_FORMAT = new AudioFormat(AudioFormat.Encoding.ULAW, 8000, 8, 1, 1, 8000, false);
     @Override
     public void exemptFromBenchmark() throws UnsupportedAudioFileException, IOException {
         for(int i=1;i<=AudioReader.NUM_SAMPLES;i++) {

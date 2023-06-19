@@ -11,6 +11,9 @@ public class AudioReader {
     public static final String INPUT_BASE_PATH = "/Users/ayush.tiwari/Downloads/rtsRedisWriter/src/main/resources/audio";
     public static final String OUTPUT_BASE_PATH = "/Users/ayush.tiwari/Downloads/rtsRedisWriter/src/main/resources/output";
     public static final long SEGMENT_DURATION = 3000;
+
+    public static final AudioFormat PCM_AUDIO_FORMAT = new AudioFormat(8000, 16, 1, true, false);
+    public static final AudioFormat ULAW_AUDIO_FORMAT = new AudioFormat(AudioFormat.Encoding.ULAW, 8000, 8, 1, 1, 8000, false);
     public AudioInputStream readAudio(String path) throws UnsupportedAudioFileException, IOException {
         File file = new File(path);
         return AudioSystem.getAudioInputStream(file);
@@ -38,6 +41,27 @@ public class AudioReader {
         return ulawAudio;
     }
 
+    public List<byte[]> segmentByteArrayInChunks(byte[] audioData, AudioFormat audioFormat, long duration) {
+        // Calculate the chunk size in bytes based on the duration
+        int chunkSizeBytes = (int) (duration * audioFormat.getSampleRate() / 1000.0) * audioFormat.getFrameSize();
+
+        // Calculate the number of chunks based on the audio data length and chunk size
+        int numChunks = (int) Math.ceil(audioData.length / (double) chunkSizeBytes);
+
+        // Create a list to hold the audio data chunks
+        List<byte[]> chunks = new ArrayList<>();
+
+        // Segment the audio data into chunks
+        for (int i = 0; i < numChunks; i++) {
+            int offset = i * chunkSizeBytes;
+            int length = Math.min(chunkSizeBytes, audioData.length - offset);
+            byte[] chunk = Arrays.copyOfRange(audioData, offset, offset + length);
+            chunks.add(chunk);
+        }
+
+        return chunks;
+    }
+
     public List<AudioInputStream> segmentAudioStreamInChunks(AudioInputStream audioInputStream, long duration) throws IOException {
         // Cut in chunks of duration ms.
         int chunkSizeBytes = (int) (duration * audioInputStream.getFormat().getFrameRate() / 1000.0) *
@@ -54,19 +78,17 @@ public class AudioReader {
         return chunks;
     }
 
-    public String audioStreamToString(AudioInputStream audioInputStream) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    public byte[] audioInputStreamToByteArray(AudioInputStream audioStream) throws IOException {
+        assert audioStream.available()>0;
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
-        int read;
-        while ((read = audioInputStream.read(buffer, 0, buffer.length)) != -1) {
-            outputStream.write(buffer, 0, read);
+        int bytesRead;
+
+        while ((bytesRead = audioStream.read(buffer, 0, buffer.length)) != -1) {
+            byteStream.write(buffer, 0, bytesRead);
         }
-        return outputStream.toString();
+        return byteStream.toByteArray();
     }
 
-    public AudioInputStream stringToAudioStream(String audioString, AudioFormat audioFormat) {
-        byte[] audioBytes = audioString.getBytes();
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(audioBytes);
-        return new AudioInputStream(inputStream, audioFormat, audioBytes.length / audioFormat.getFrameSize());
-    }
 }
