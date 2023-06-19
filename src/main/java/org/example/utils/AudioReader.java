@@ -31,22 +31,12 @@ public class AudioReader {
     }
 
     public AudioInputStream pcmToUlaw(AudioInputStream pcmAudio) throws IOException {
+        pcmAudio.available();
         AudioFormat pcmFormat = pcmAudio.getFormat();
         AudioFormat ulawFormat = new AudioFormat(AudioFormat.Encoding.ULAW, pcmFormat.getSampleRate(), 8, 1, 1, pcmFormat.getSampleRate(), false);
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int read;
-        while ((read = pcmAudio.read(buffer)) != -1) {
-            outputStream.write(buffer, 0, read);
-        }
-        byte[] ulawData = outputStream.toByteArray();
-        System.out.println(Arrays.toString(ulawData));
-        ByteArrayInputStream ulawStream = new ByteArrayInputStream(ulawData);
-
-        return new AudioInputStream(ulawStream, ulawFormat, ulawData.length / ulawFormat.getFrameSize());
+        AudioInputStream ulawAudio = AudioSystem.getAudioInputStream(ulawFormat, pcmAudio);
+        return ulawAudio;
     }
-
 
     public List<AudioInputStream> segmentAudioStreamInChunks(AudioInputStream audioInputStream, long duration) throws IOException {
         // Cut in chunks of duration ms.

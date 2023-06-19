@@ -14,11 +14,10 @@ public class Main {
 //        Benchmark.runBenchmark(new PcmToUlaw(), 20);
 //        Benchmark.runBenchmark(new RedisWriteAudio(), 20);
         AudioReader audioReader = new AudioReader();
-        AudioInputStream ais = audioReader.readAllAudioSample().get(0);
-        audioReader.saveToOutput(ais, "inpcm.wav");
+        AudioInputStream ais = audioReader.readAllAudioSample().get(113);
+        audioReader.saveToOutput(ais, "in-pcm.wav");
         //convert to ulaw audio stream
-        AudioInputStream ulaw = audioReader.pcmToUlaw(audioReader.readAllAudioSample().get(0));
-        audioReader.saveToOutput(ulaw, "inulaw.wav");
-        Thread.sleep(2000);
+        AudioInputStream ulaw = audioReader.pcmToUlaw(audioReader.readAllAudioSample().get(113));
+        audioReader.saveToOutput(ulaw, "in-ulaw.wav");
     }
 }
