@@ -3,8 +3,7 @@ package org.example.benchmark;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
 
-public class WriteToRedis extends Benchmark{
-
+public class RedisReadAudio extends Benchmark{
     @Override
     public void exemptFromBenchmark() throws UnsupportedAudioFileException, IOException {
 
